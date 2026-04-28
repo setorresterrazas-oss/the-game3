@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Sistema de Identidad</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0c0c12;
+    --bg2: #12121e;
+    --bg3: #1a1a2a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --muted2: #475569;
+
+    --c-color: #378ADD;
+    --c-bg: rgba(55,138,221,0.12);
+    --c-border: rgba(55,138,221,0.3);
+    --c-text: #85B7EB;
+    --c-fill: #378ADD;
+
+    --a-color: #D4537E;
+    --a-bg: rgba(212,83,126,0.12);
+    --a-border: rgba(212,83,126,0.3);
+    --a-text: #ED93B1;
+    --a-fill: #D4537E;
+
+    --t-color: #BA7517;
+    --t-bg: rgba(186,117,23,0.12);
+    --t-border: rgba(186,117,23,0.3);
+    --t-text: #FAC775;
+    --t-fill: #BA7517;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    background: linear-gradient(90deg, #fbbf24, #f97316, #ec4899, #a78bfa, #fbbf24);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+  }
+  .subtitle {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+  .date-badge {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ── IDENTITY CARDS ── */
+  .identity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .id-card {
+    border-radius: 12px;
+    border: 1px solid;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .id-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+  .id-card.c { border-color: var(--c-border); background: var(--c-bg); }
+  .id-card.c::before { background: var(--c-color); }
+  .id-card.a { border-color: var(--a-border); background: var(--a-bg); }
+  .id-card.a::before { background: var(--a-color); }
+  .id-card.t { border-color: var(--t-border); background: var(--t-bg); }
+  .id-card.t::before { background: var(--t-color); }
+
+  .id-label { font-size: 9px; letter-spacing: 0.12em; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+  .id-pts { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+  .id-rank { font-size: 11px; margin: 3px 0 7px; opacity: 0.75; }
+  .id-footer { font-size: 10px; opacity: 0.55; margin-top: 4px; }
+
+  .id-card.c .id-label,
+  .id-card.c .id-pts,
+  .id-card.c .id-rank,
+  .id-card.c .id-footer { color: var(--c-text); }
+
+  .id-card.a .id-label,
+  .id-card.a .id-pts,
+  .id-card.a .id-rank,
+  .id-card.a .id-footer { color: var(--a-text); }
+
+  .id-card.t .id-label,
+  .id-card.t .id-pts,
+  .id-card.t .id-rank,
+  .id-card.t .id-footer { color: var(--t-text); }
+
+  /* ── PROGRESS BAR ── */
+  .pb { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; margin: 6px 0 4px; }
+  .pf { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .pf.c { background: var(--c-fill); box-shadow: 0 0 6px var(--c-fill); }
+  .pf.a { background: var(--a-fill); box-shadow: 0 0 6px var(--a-fill); }
+  .pf.t { background: var(--t-fill); box-shadow: 0 0 6px var(--t-fill); }
+
+  /* ── DAILY PROGRESS ── */
+  .daily-bar {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .daily-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .daily-label { font-size: 12px; color: var(--muted); }
+  .daily-count { font-size: 13px; font-weight: 600; color: var(--text); }
+  .daily-pb { height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+  .daily-pf { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text);
+    max-width: 280px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 9999;
+    line-height: 1.4;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast .toast-name { font-weight: 600; }
+  #toast .toast-streak { color: #fbbf24; font-size: 12px; }
+  #toast .toast-rank { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 8px;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:first-child { border-top: none; margin-top: 0; }
+  .section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .section-title.c { color: var(--c-text); }
+  .section-title.a { color: var(--a-text); }
+  .section-title.t { color: var(--t-text); }
+  .section-toggle { font-size: 11px; color: var(--muted2); }
+
+  /* ── HABIT ITEM ── */
+  .habit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 5px;
+    cursor: pointer;
+    background: var(--bg2);
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .habit-item:hover { background: var(--bg3); }
+  .habit-item.done.c { background: var(--c-bg); border-color: var(--c-border); box-shadow: 0 0 12px rgba(55,138,221,0.08); }
+  .habit-item.done.a { background: var(--a-bg); border-color: var(--a-border); box-shadow: 0 0 12px rgba(212,83,126,0.08); }
+  .habit-item.done.t { background: var(--t-bg); border-color: var(--t-border); box-shadow: 0 0 12px rgba(186,117,23,0.08); }
+
+  /* checkbox */
+  .checkbox {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border2);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .checkbox.checked.c { background: var(--c-bg); border-color: var(--c-fill); }
+  .checkbox.checked.a { background: var(--a-bg); border-color: var(--a-fill); }
+  .checkbox.checked.t { background: var(--t-bg); border-color: var(--t-fill); }
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 6px;
+    width: 5px; height: 9px;
+    border-right: 2px solid;
+    border-bottom: 2px solid;
+    transform: rotate(45deg);
+  }
+  .checkbox.checked.c::after { border-color: var(--c-text); }
+  .checkbox.checked.a::after { border-color: var(--a-text); }
+  .checkbox.checked.t::after { border-color: var(--t-text); }
+
+  /* habit info */
+  .habit-info { flex: 1; min-width: 0; }
+  .habit-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s;
+  }
+  .habit-item.done .habit-name { color: var(--text); font-weight: 500; }
+  .habit-meta {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .habit-freq { opacity: 0.7; }
+  .habit-rank-tag {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .rank-tag-c { background: var(--c-bg); color: var(--c-text); border: 1px solid var(--c-border); }
+  .rank-tag-a { background: var(--a-bg); color: var(--a-text); border: 1px solid var(--a-border); }
+  .rank-tag-t { background: var(--t-bg); color: var(--t-text); border: 1px solid var(--t-border); }
+
+  /* right side */
+  .habit-right { text-align: right; flex-shrink: 0; min-width: 48px; }
+  .habit-pts { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600; }
+  .habit-pts.c { color: var(--c-text); }
+  .habit-pts.a { color: var(--a-text); }
+  .habit-pts.t { color: var(--t-text); }
+  .habit-streak {
+    font-size: 11px;
+    color: #fbbf24;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+  .habit-streak-bar { width: 40px; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin-top: 3px; margin-left: auto; }
+  .habit-streak-fill { height: 100%; border-radius: 2px; }
+  .streak-fill-c { background: var(--c-fill); }
+  .streak-fill-a { background: var(--a-fill); }
+  .streak-fill-t { background: var(--t-fill); }
+
+  @keyframes shimmer { 0%{background-position:0% 50%} 100%{background-position:300% 50%} }
+
+  /* mobile */
+  @media (max-width: 500px) {
+    body { padding: 14px; }
+    .identity-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .id-card { padding: 10px 10px; }
+    .id-pts { font-size: 22px; }
+    .title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toast">
+  <div class="toast-name" id="toast-name"></div>
+  <div class="toast-streak" id="toast-streak"></div>
+  <div class="toast-rank" id="toast-rank"></div>
+</div>
+
+<div class="header">
+  <div>
+    <div class="title">THE GAME</div>
+    <div class="subtitle">Sistema de Identidad</div>
+  </div>
+  <div class="date-badge" id="date-badge"></div>
+</div>
+
+<!-- Identity cards -->
+<div class="identity-grid" id="identity-grid"></div>
+
+<!-- Daily progress -->
+<div class="daily-bar">
+  <div class="daily-header">
+    <span class="daily-label">Progreso de hoy</span>
+    <span class="daily-count" id="daily-count">0/21 — 0%</span>
+  </div>
+  <div class="daily-pb">
+    <div class="daily-pf" id="daily-pf" style="width:0%;background:#378ADD"></div>
+  </div>
+</div>
+
+<!-- Habits -->
+<div id="habits-container"></div>
+
+<script>
+const HABITS = [
+  {id:'cs_ds',     name:'Cs & Ds',       k:'c', f:'2x/sem'},
+  {id:'mechanical',name:'Mechanical',    k:'c', f:'Semanal'},
+  {id:'l_w',       name:'L & W',         k:'c', f:'2x/sem'},
+  {id:'mente',     name:'Mente',         k:'c', f:'2x/sem'},
+  {id:'discuss',   name:'Discuss',       k:'c', f:'Diario'},
+  {id:'balance',   name:'Balance',       k:'c', f:'Diario'},
+  {id:'paneo_econo',name:'Paneo econo',  k:'c', f:'Diario'},
+  {id:'learn',     name:'Learn',         k:'c', f:'Diario'},
+  {id:'dreams',    name:'Dreams',        k:'c', f:'Diario'},
+  {id:'brilliant', name:'Brilliant',     k:'c', f:'Diario'},
+  {id:'torneo',    name:'Torneo',        k:'a', f:'Semanal'},
+  {id:'train',     name:'Train',         k:'a', f:'2x/sem'},
+  {id:'move',      name:'Move',          k:'a', f:'4x/sem'},
+  {id:'music',     name:'Music',         k:'a', f:'2x/sem'},
+  {id:'chess',     name:'Chess',         k:'a', f:'Diario'},
+  {id:'flexy',     name:'Flexy',         k:'a', f:'Diario'},
+  {id:'meditar',   name:'Meditar',       k:'t', f:'Diario'},
+  {id:'let_him_cook',name:'Let him cook',k:'t', f:'Diario'},
+  {id:'inner_self',name:'Inner self (us)',k:'t',f:'Diario'},
+  {id:'dental',    name:'Dental',        k:'t', f:'Diario'},
+  {id:'skin',      name:'Skin',          k:'t', f:'Diario'},
+];
+
+const ID_CFG = {
+  c: { label: 'Cientifico' },
+  a: { label: 'Artista' },
+  t: { label: 'Templado' },
+};
+
+const HABIT_RANKS = [
+  {n:'Inicio',           m:0},
+  {n:'Primera victoria', m:7},
+  {n:'En proceso',       m:15},
+  {n:'Habito formado',   m:33},
+  {n:'Consistencia real',m:66},
+  {n:'Mentalidad fuerte',m:100},
+  {n:'Disciplina solida',m:150},
+  {n:'Trascendencia',    m:250},
+  {n:'Ascendido',        m:380},
+];
+
+const ID_RANKS = [
+  {n:'Iniciado',      m:0},
+  {n:'Aprendiz',      m:50},
+  {n:'Practicante',   m:150},
+  {n:'Comprometido',  m:350},
+  {n:'Disciplinado',  m:700},
+  {n:'Maestro',       m:1200},
+  {n:'Ascendido',     m:2000},
+];
+
+// ── UTILS ────────────────────────────────────────────────
+
+function today() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+function calcStreak(hist) {
+  if (!hist || !hist.length) return 0;
+  const set = new Set(hist);
+  let cur = new Date(today());
+  if (!set.has(today())) cur.setDate(cur.getDate() - 1);
+  let s = 0;
+  for (let i = 0; i < 1000; i++) {
+    const ds = cur.toISOString().split('T')[0];
+    if (set.has(ds)) { s++; cur.setDate(cur.getDate() - 1); }
+    else break;
+  }
+  return s;
+}
+
+function getRank(v, arr) {
+  let r = arr[0];
+  for (const x of arr) if (v >= x.m) r = x;
+  return r;
+}
+function getNext(v, arr) {
+  for (const x of arr) if (v < x.m) return x;
+  return null;
+}
+function progress(v, cur, nxt) {
+  if (!nxt) return 100;
+  return Math.min(100, Math.round(((v - cur.m) / (nxt.m - cur.m)) * 100));
+}
+function calcPoints(d) {
+  const s = calcStreak(d.hist);
+  return d.tot + Math.floor(s / 7) * 3;
+}
+
+// ── STORAGE ──────────────────────────────────────────────
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('the_game_v1');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+
+function saveData(D) {
+  try { localStorage.setItem('the_game_v1', JSON.stringify(D)); } catch(e) {}
+}
+
+// ── STATE ────────────────────────────────────────────────
+
+let D = loadData();
+let collapsed = { c: false, a: false, t: false };
+HABITS.forEach(h => { if (!D[h.id]) D[h.id] = { hist:[], best:0, tot:0 }; });
+
+// ── TOAST ────────────────────────────────────────────────
+
+let toastTimer = null;
+function showToast(name, streak, rank) {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-name').textContent = name + ' completado';
+  document.getElementById('toast-streak').textContent = streak > 0 ? 'Racha: ' + streak + ' dia' + (streak !== 1 ? 's' : '') : '';
+  document.getElementById('toast-rank').textContent = rank;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── TOGGLE ───────────────────────────────────────────────
+
+function toggle(id) {
+  const td = today();
+  const d = D[id];
+  const had = d.hist.includes(td);
+  if (had) {
+    d.hist = d.hist.filter(x => x !== td);
+    d.tot = Math.max(0, d.tot - 1);
+  } else {
+    d.hist.push(td);
+    d.tot++;
+    // keep 150 days
+    const cut = new Date(); cut.setDate(cut.getDate() - 150);
+    d.hist = d.hist.filter(x => new Date(x) >= cut);
+    const s = calcStreak(d.hist);
+    d.best = Math.max(d.best || 0, s);
+    const h = HABITS.find(x => x.id === id);
+    showToast(h.name, s, getRank(s, HABIT_RANKS).n);
+  }
+  saveData(D);
+  render();
+}
+
+function toggleSection(k) {
+  collapsed[k] = !collapsed[k];
+  render();
+}
+
+// ── RENDER ───────────────────────────────────────────────
+
+function render() {
+  const td = today();
+
+  // date
+  const fmt = new Intl.DateTimeFormat('es-AR', { weekday:'long', day:'numeric', month:'long' }).format(new Date());
+  document.getElementById('date-badge').innerHTML = fmt.charAt(0).toUpperCase() + fmt.slice(1);
+
+  // identity points
+  const ip = { c:0, a:0, t:0 };
+  HABITS.forEach(h => ip[h.k] += calcPoints(D[h.id]));
+
+  // identity cards
+  const idGrid = document.getElementById('identity-grid');
+  idGrid.innerHTML = '';
+  ['c','a','t'].forEach(k => {
+    const cfg = ID_CFG[k];
+    const pts = ip[k] || 0;
+    const rk = getRank(pts, ID_RANKS);
+    const nxt = getNext(pts, ID_RANKS);
+    const pr = progress(pts, rk, nxt);
+    const hl = HABITS.filter(h => h.k === k);
+    const dn = hl.filter(h => D[h.id]?.hist?.includes(td)).length;
+    const card = document.createElement('div');
+    card.className = 'id-card ' + k;
+    card.innerHTML = `
+      <div class="id-label">${cfg.label}</div>
+      <div class="id-pts">${pts}</div>
+      <div class="id-rank">${rk.n}</div>
+      <div class="pb"><div class="pf ${k}" style="width:${pr}%"></div></div>
+      <div class="id-footer">${dn}/${hl.length} hoy${nxt ? ' · ' + nxt.n : ' · MAX'}</div>
+    `;
+    idGrid.appendChild(card);
+  });
+
+  // daily progress
+  const done = HABITS.filter(h => D[h.id]?.hist?.includes(td)).length;
+  const pct = Math.round((done / HABITS.length) * 100);
+  document.getElementById('daily-count').textContent = `${done}/${HABITS.length} — ${pct}%${pct===100 ? ' — Perfecto!' : ''}`;
+  const dpf = document.getElementById('daily-pf');
+  dpf.style.width = pct + '%';
+  dpf.style.background = pct === 100 ? '#1D9E75' : '#378ADD';
+
+  // habits
+  const container = document.getElementById('habits-container');
+  container.innerHTML = '';
+  ['c','a','t'].forEach(k => {
+    const cfg = ID_CFG[k];
+    const hl = HABITS.filter(h => h.k === k);
+    const isC = collapsed[k];
+
+    // section header
+    const sec = document.createElement('div');
+    sec.className = 'section-header';
+    sec.innerHTML = `
+      <span class="section-title ${k}">${cfg.label.toUpperCase()}</span>
+      <span class="section-toggle">${isC ? 'mostrar ▼' : 'ocultar ▲'}</span>
+    `;
+    sec.addEventListener('click', () => toggleSection(k));
+    container.appendChild(sec);
+
+    if (!isC) {
+      hl.forEach(h => {
+        const d = D[h.id] || { hist:[], best:0, tot:0 };
+        const isDone = d.hist.includes(td);
+        const s = calcStreak(d.hist);
+        const pts = calcPoints(d);
+        const rk = getRank(s, HABIT_RANKS);
+        const nxt = getNext(s, HABIT_RANKS);
+        const pr = progress(s, rk, nxt);
+
+        const item = document.createElement('div');
+        item.className = `habit-item ${isDone ? 'done ' + k : ''}`;
+        item.innerHTML = `
+          <div class="checkbox ${isDone ? 'checked ' + k : ''}"></div>
+          <div class="habit-info">
+            <div class="habit-name">${h.name}</div>
+            <div class="habit-meta">
+              <span class="habit-freq">${h.f}</span>
+              <span class="habit-rank-tag rank-tag-${k}">${rk.n}</span>
+            </div>
+          </div>
+          <div class="habit-right">
+            <div class="habit-pts ${k}">${pts}</div>
+            ${s > 0 ? `<div class="habit-streak">${s}d</div>` : ''}
+            ${s > 0 && nxt ? `<div class="habit-streak-bar"><div class="habit-streak-fill streak-fill-${k}" style="width:${pr}%"></div></div>` : ''}
+          </div>
+        `;
+        item.addEventListener('click', () => toggle(h.id));
+        container.appendChild(item);
+      });
+    }
+  });
+}
+
+render();
+</script>
+</body>
+</html>
